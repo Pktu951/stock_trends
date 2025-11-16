@@ -1,9 +1,13 @@
+import os
 from train import Trainer
 from predict import Predictor
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from db import init_db, get_connection
+
+DATA_FOLDER = r"C:\Users\Lukasz\Desktop\stock_project\data"
+os.makedirs(DATA_FOLDER, exist_ok=True)
 
 def predict_future_rf(models, df_features, n_days=30):
     """Predykcje przyszłych cen RandomForest"""
@@ -43,6 +47,7 @@ def predict_future_lstm(models, df_features, n_days=30):
     return future_preds
 
 def main():
+    init_db()
     ticker = "AAPL"
     start = "2025-07-01"
     end = "2025-09-01"
@@ -84,13 +89,24 @@ def main():
     plt.show()
     results_df = pd.DataFrame({
         "date": future_index,
-        "rf_future": rf_future,
-        "lstm_future": lstm_future
+        "rf_future": np.round(rf_future, 2),
+        "lstm_future": np.round(lstm_future, 2)
     })
 
-    results_df.to_csv("predictions.csv", index=False)
-    print("Zapisano predykcje do predictions.csv")
+    csv_path = os.path.join(DATA_FOLDER, "predictions.csv")
+    results_df.to_csv(csv_path, index=False)
+    print(f"Zapisano predykcje do {csv_path}")
 
+    conn = get_connection()
+    cur = conn.cursor()
+    for d, rf, lstm in zip(future_index, rf_future, lstm_future):
+        cur.execute(
+            "INSERT INTO predictions (date, rf, lstm) VALUES (?, ?, ?)",
+            (str(d.date()), round(float(rf), 2), round(float(lstm), 2))
+        )
+    conn.commit()
+    conn.close()
+    print("Zapisano predykcje w bazie SQLite (stocks.db)")
 
 if __name__ == "__main__":
     main()

@@ -1,7 +1,13 @@
 import sqlite3
+import os
+
+DB_FOLDER = r"C:\Users\Lukasz\Desktop\stock_project\data"
+DB_FILE = os.path.join(DB_FOLDER, "stocks.db")
+
+os.makedirs(DB_FOLDER, exist_ok=True)
 
 def get_connection():
-    conn = sqlite3.connect("stocks.db")
+    conn = sqlite3.connect(DB_FILE)
     return conn
 
 def init_db():
