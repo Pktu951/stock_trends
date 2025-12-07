@@ -49,8 +49,8 @@ def predict_future_lstm(models, df_features, n_days=30):
 def main():
     init_db()
     ticker = "AAPL"
-    start = "2025-07-01"
-    end = "2025-09-01"
+    start = "2025-11-01"
+    end = "2025-12-01"
 
     trainer = Trainer(ticker, start, end)
     models = trainer.train_models()
